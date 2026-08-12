@@ -1,0 +1,41 @@
+@model List<CafePOS.Models.Database.Item>
+
+@{
+    ViewData["Title"] = "Add Item";
+
+}
+
+<div class="container">
+    <h1>Add Item to Order</h1>
+
+    @foreach (var item in Model)
+    {
+        <div class="card mb-3">
+            <div class="card-body">
+                <h4>@item.ItemName</h4>
+
+                <p>@item.ItemDescription</p>
+
+                <form asp-controller="Orders"
+                asp-action="AddItemToOrder"
+                method="post">
+                
+                <input type="hidden"
+                name="orderId"
+                value="@ViewBag.OrderId" />
+
+                <input type="hidden" 
+                name="itemId"
+                value="@item.ItemId" />
+
+                <button type="submit"
+                class="btn btn-primary">
+                Add Item
+                </button>
+                
+                </form>
+            </div>
+        </div>
+    }
+</div>
+

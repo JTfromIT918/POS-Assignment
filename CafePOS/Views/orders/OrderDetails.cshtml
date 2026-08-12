@@ -1,4 +1,3 @@
-```cshtml
 @model CafePOS.Models.Database.CafeOrder
 
 @{
@@ -88,7 +87,14 @@
             @Model.AmountDue?.ToString("C")
         </h3>
     </div>
+    <a asp-controller="Orders"
+    asp-action="AddItem"
+    asp-route-orderId="@Model.OrderId"
+    class="btn btn-primary">
 
+    Add Item to Order
+
+    </a>
     @if (Model.PaymentTypeId == null)
     {
         <a asp-controller="Orders"
@@ -113,4 +119,4 @@
         Back to Open Orders
     </a>
 </div>
-```
+
