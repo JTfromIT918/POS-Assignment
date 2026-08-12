@@ -1,0 +1,119 @@
+@model CafePOS.Models.CreateOrderViewModel
+
+@{
+    ViewData["Title"] = "Current Order";
+}
+
+<div class="container">
+
+    <h1>Current Order</h1>
+
+    <p>
+        Server ID: <strong>@Model.ServerID</strong>
+    </p>
+
+    <hr />
+
+    @foreach (var item in Model.OrderItems)
+    {
+        <div class="card mb-3">
+            <div class="card-body">
+
+                <h3>@item.ItemName</h3>
+
+                <div class="d-flex align-items-center gap-2 mb-3">
+                    <strong>Quantity:</strong>
+
+                    <form asp-controller="Orders"
+                          asp-action="DecreaseQuantity"
+                          method="post">
+
+                        <input type="hidden"
+                               name="itemId"
+                               value="@item.ItemID" />
+
+                        <input type="hidden"
+                               name="serverId"
+                               value="@Model.ServerID" />
+
+                        <button type="submit" class="btn btn-secondary">
+                            −
+                        </button>
+                    </form>
+
+                    <span>@item.Quantity</span>
+
+                    <form asp-controller="Orders"
+                          asp-action="IncreaseQuantity"
+                          method="post">
+
+                        <input type="hidden"
+                               name="itemId"
+                               value="@item.ItemID" />
+
+                        <input type="hidden"
+                               name="serverId"
+                               value="@Model.ServerID" />
+
+                        <button type="submit" class="btn btn-secondary">
+                            +
+                        </button>
+                    </form>
+                </div>
+
+                <p>
+                    Price: $@item.Price.ToString("0.00")
+                </p>
+
+                <p>
+                    Line Total: $@item.LineTotal.ToString("0.00")
+                </p>
+
+                <form asp-controller="Orders"
+                      asp-action="RemoveItem"
+                      method="post">
+
+                    <input type="hidden"
+                           name="itemId"
+                           value="@item.ItemID" />
+
+                    <input type="hidden"
+                           name="serverId"
+                           value="@Model.ServerID" />
+
+                    <button type="submit" class="btn btn-danger">
+                        Remove
+                    </button>
+                </form>
+
+            </div>
+        </div>
+    }
+
+    <hr />
+
+    <h2>
+        Total:
+        $@Model.OrderItems.Sum(item => item.LineTotal).ToString("0.00")
+    </h2>
+
+    @if (Model.OrderItems.Any())
+    {
+        <form asp-conttroller="Orders"
+        asp-action="PlaceOrder"
+        method="post"
+        class="mt-4">
+
+        <input type = "hidden"
+        name = "serverId"
+        value = "@Model.ServerID" />
+
+        <button type="submit" class="btn btn-success btn-lg">
+            Place Order
+        </button> 
+    </form>
+
+
+    }
+
+</div>

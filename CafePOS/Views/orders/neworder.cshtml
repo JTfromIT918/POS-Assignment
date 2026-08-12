@@ -1,4 +1,4 @@
-@model List<CafePOS.Models.Server>
+@model List<CafePOS.Models.Database.Server>
 
 @{
     ViewData["Title"] = "Create New Order";
@@ -26,7 +26,7 @@
 
                     <a asp-controller="Orders"
                        asp-action="SelectServer"
-                       asp-route-serverId="@server.ServerID"
+                       asp-route-serverId="@server.ServerId"
                        class="btn btn-primary">
                         Select Server
                     </a>

@@ -1,0 +1,44 @@
+```cshtml
+@model CafePOS.Models.CreateOrderViewModel
+
+@{
+    ViewData["Title"] = "Order Confirmation";
+}
+
+<div class="container text-center">
+
+    <h1>Order Placed!</h1>
+
+    <p class="lead">
+        Order for Server ID:
+        <strong>@Model.ServerID</strong>
+    </p>
+
+    <hr />
+
+    <h3>Order Summary</h3>
+
+    @foreach (var item in Model.OrderItems)
+    {
+        <div class="mb-2">
+            <strong>@item.ItemName</strong>
+            × @item.Quantity
+            — $@item.LineTotal.ToString("0.00")
+        </div>
+    }
+
+    <hr />
+
+    <h2>
+        Total:
+        $@Model.OrderItems.Sum(item => item.LineTotal).ToString("0.00")
+    </h2>
+
+    <a asp-controller="Orders"
+       asp-action="NewOrder"
+       class="btn btn-primary mt-4">
+        Start New Order
+    </a>
+
+</div>
+```

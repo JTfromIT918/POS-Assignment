@@ -1,0 +1,77 @@
+```cshtml
+@model CafePOS.Models.Database.CafeOrder
+
+@{
+    ViewData["Title"] = "Process Payment";
+    var paymentTypes = ViewBag.PaymentTypes as List<CafePOS.Models.Database.PaymentType>;
+}
+
+<div class="container">
+    <h1>Process Payment</h1>
+
+    <h3>Order #@Model.OrderId</h3>
+
+    <p>
+        <strong>Server:</strong>
+        @(Model.Server != null
+            ? $"{Model.Server.FirstName} {Model.Server.LastName}"
+            : "Unassigned")
+    </p>
+
+    <p>
+        <strong>Amount Due:</strong>
+        @Model.AmountDue?.ToString("C")
+    </p>
+
+    <hr />
+
+    <h3>Select Payment Type</h3>
+
+    @if (paymentTypes == null || !paymentTypes.Any())
+    {
+        <p>No payment types are available.</p>
+    }
+    else
+    {
+        <form asp-controller="Orders"
+              asp-action="ProcessPayment"
+              method="post">
+
+            <input type="hidden"
+                   name="orderId"
+                   value="@Model.OrderId" />
+
+            <div class="mb-3">
+                @foreach (var paymentType in paymentTypes)
+                {
+                    <div class="form-check mb-2">
+                        <input class="form-check-input"
+                               type="radio"
+                               name="paymentTypeId"
+                               value="@paymentType.PaymentTypeId"
+                               id="payment-@paymentType.PaymentTypeId"
+                               required />
+
+                        <label class="form-check-label"
+                               for="payment-@paymentType.PaymentTypeId">
+                            @paymentType.PaymentTypeName
+                        </label>
+                    </div>
+                }
+            </div>
+
+            <button type="submit"
+                    class="btn btn-success">
+                Process Payment
+            </button>
+        </form>
+    }
+
+    <a asp-controller="Orders"
+       asp-action="OrderDetails"
+       asp-route-orderId="@Model.OrderId"
+       class="btn btn-secondary mt-3">
+        Back to Order
+    </a>
+</div>
+```

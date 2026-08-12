@@ -9,4 +9,7 @@ public class OrderItemViewModel
     public decimal Price { get; set; }
 
     public int Quantity { get; set; }
+
+    public decimal LineTotal => Price * Quantity;
+    
 }

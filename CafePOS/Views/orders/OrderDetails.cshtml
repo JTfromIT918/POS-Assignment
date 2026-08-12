@@ -1,0 +1,116 @@
+```cshtml
+@model CafePOS.Models.Database.CafeOrder
+
+@{
+    ViewData["Title"] = $"Order #{Model.OrderId}";
+}
+
+<div class="container">
+    <h1>Order #@Model.OrderId</h1>
+
+    <p>
+        <strong>Server:</strong>
+        @(Model.Server != null
+            ? $"{Model.Server.FirstName} {Model.Server.LastName}"
+            : "Unassigned")
+    </p>
+
+    <p>
+        <strong>Date:</strong>
+        @Model.OrderDate.ToString("g")
+    </p>
+
+    <hr />
+
+    <h3>Items</h3>
+
+    @if (!Model.OrderItems.Any())
+    {
+        <p>No items on this order.</p>
+    }
+    else
+    {
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Item</th>
+                    <th>Quantity</th>
+                    <th>Price</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @foreach (var orderItem in Model.OrderItems)
+                {
+                    <tr>
+                        <td>
+                            @orderItem.ItemPrice.Item.ItemName
+                        </td>
+
+                        <td>
+                            @orderItem.Quantity
+                        </td>
+
+                        <td>
+                            @orderItem.ItemPrice.Price.ToString("C")
+                        </td>
+
+                        <td>
+                            @orderItem.ExtendedPrice.ToString("C")
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+
+    <hr />
+
+    <div>
+        <p>
+            <strong>Subtotal:</strong>
+            @Model.SubTotal?.ToString("C")
+        </p>
+
+        <p>
+            <strong>Tax:</strong>
+            @Model.Tax?.ToString("C")
+        </p>
+
+        <p>
+            <strong>Tip:</strong>
+            @Model.Tip?.ToString("C")
+        </p>
+
+        <h3>
+            Amount Due:
+            @Model.AmountDue?.ToString("C")
+        </h3>
+    </div>
+
+    @if (Model.PaymentTypeId == null)
+    {
+        <a asp-controller="Orders"
+           asp-action="Payment"
+           asp-route-orderId="@Model.OrderId"
+           class="btn btn-success">
+            Process Payment
+        </a>
+    }
+    else
+    {
+        <div class="alert alert-success">
+            <strong>Paid</strong>
+            — Payment Type:
+            @Model.PaymentType?.PaymentTypeName
+        </div>
+    }
+
+    <a asp-controller="Home"
+       asp-action="Index"
+       class="btn btn-secondary">
+        Back to Open Orders
+    </a>
+</div>
+```

@@ -1,24 +1,56 @@
-﻿@{
-    ViewData["Title"] = "CafePOS";
+﻿@model List<CafePOS.Models.Database.CafeOrder>
 
+@{
+    ViewData["Title"] = "Open Orders";
 }
 
-<div class="text-center">
-    <h1>4th Wall Cafe</h1>
-    <p>Point of Sale</p>
+<div class="container">
 
-   
+    <h1>Open Orders</h1>
+
+    <a asp-controller="Orders"
+       asp-action="NewOrder"
+       class="btn btn-primary mb-4">
+        Create New Order
+    </a>
+
+    @if (!Model.Any())
+    {
+        <p>No open orders.</p>
+    }
+    else
+    {
+        foreach (var order in Model)
+        {
+            <div class="card mb-3">
+                <div class="card-body">
+
+                    <h3>
+                        Order #@order.OrderId
+                    </h3>
+
+                    <p>
+                        Date:
+                        @order.OrderDate.ToString("g")
+                    </p>
+
+                    <p>
+                        Server:
+                        @(order.Server != null
+                            ? $"{order.Server.FirstName} {order.Server.LastName}"
+                            : "Unassigned")
+                    </p>
+
+                    <a asp-controller="Orders"
+                       asp-action="OrderDetails"
+                       asp-route-orderId="@order.OrderId"
+                       class="btn btn-secondary">
+                        View Order
+                    </a>
+
+                </div>
+            </div>
+        }
+    }
+
 </div>
-
-<hr />
-
-<h2>Open Orders</h2>
-
-<p>
-    Open orders will apear here.
-</p>
-
-<a asp-controller="Orders" asp-action="NewOrder" class="btn btn-primary">
-    Create New Order
-
-</a>

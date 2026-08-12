@@ -1,26 +1,25 @@
-@using CafePOS.Models
+@model CafePOS.Models.CreateOrderViewModel
 
 @{
     ViewData["Title"] = "Create Order";
 
-    var categories = ViewBag.Categories as List<Category>;
-        var items = ViewBag.Items as List<Item>;
+
 
 }
 
 <div class="container">
     <div class="mb-4">
-        <h1>Crreate Order</h1>
-        <p>Server ID: <strong>@ViewBag.ServerId</strong></p>
+        <h1>Create Order</h1>
+        <p>Server ID: <strong>@Model.ServerID</strong></p>
     </div>
 
-    @foreach (var category in categories!)
+    @foreach (var category in Model.Categories)
     {
         <section class="mb-5">
             <h2>@category.CategoryName</h2>
 
             <div class="row g-4">
-                @foreach (var item in items! .Where(i => i.CategoryID == category.CategoryID))
+                @foreach (var item in Model.Items.Where(i => i.CategoryId == category.CategoryId))
                 {
                     <div class="col-md-4">
                         <div class="card h-100">
@@ -37,13 +36,13 @@
 
                                       <input type="hidden"
                                       name="serverId"
-                                      value="@ViewBag.ServerId" />
+                                      value="@Model.ServerID" />
 
                                       <input type="hidden"
                                       name="itemId"
-                                      value="@ViewBag.ItemID" />
+                                      value="@item.ItemId" />
 
-                                      <button type="submit class="btn btn-primary">
+                                      <button type="submit" class="btn btn-primary">
                                         Add
                                       </button>
                                       </form>
