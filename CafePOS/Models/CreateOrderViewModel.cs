@@ -8,5 +8,5 @@ public class CreateOrderViewModel
 
     public List<CafePOS.Models.Database.Item> Items { get; set; } = new();
 
-    public List<OrderItemViewModel> OrderItems { get; set; } = new();
+   
 }

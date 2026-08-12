@@ -2,6 +2,7 @@ using System.Diagnostics;
 using CafePOS.Models;
 using CafePOS.Models.Database;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace CafePOS.Controllers;
 
@@ -21,6 +22,8 @@ public class HomeController : Controller
     public IActionResult Index()
     {
         var openOrders = _context.CafeOrders
+            .Include(order => order.Server)
+            .Include(order => order.OrderItems)
             .Where(order => order.PaymentTypeId == null)
             .OrderBy(order => order.OrderDate)
             .ToList();

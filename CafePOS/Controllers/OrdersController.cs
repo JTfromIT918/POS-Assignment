@@ -2,7 +2,7 @@ using CafePOS.Models;
 using CafePOS.Models.Database;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Text.Json;
+
 
 namespace CafePOS.Controllers;
 
@@ -50,24 +50,24 @@ public class OrdersController : Controller
 
         {
 
-        ServerId = serverId,
-        OrderDate = DateTime.Now,
-        SubTotal = 0,
-        Tax = 0,
-        Tip = 0,
-        AmountDue = 0
-    };
+            ServerId = serverId,
+            OrderDate = DateTime.Now,
+            SubTotal = 0,
+            Tax = 0,
+            Tip = 0,
+            AmountDue = 0
+        };
 
-    _context.CafeOrders.Add(order);
-    _context.SaveChanges();
+        _context.CafeOrders.Add(order);
+        _context.SaveChanges();
 
-    return RedirectToAction(
-        "OrderDetails",
-        new { orderId = order.OrderId }
+        return RedirectToAction(
+            "OrderDetails",
+            new { orderId = order.OrderId }
 
-    );
+        );
 
-}
+    }
 
     public IActionResult CreateOrder(int serverId)
     {
@@ -85,183 +85,6 @@ public class OrdersController : Controller
         };
 
         return View(viewModel);
-    }
-
-    [HttpPost]
-    public IActionResult AddItem(int serverId, int itemId)
-    {
-        var item = _context.Items
-            .FirstOrDefault(i => i.ItemId == itemId);
-
-        if (item == null)
-        {
-            return NotFound();
-        }
-
-        var itemPrice = _context.ItemPrices
-            .FirstOrDefault(p => p.ItemId == itemId);
-
-        if (itemPrice == null)
-        {
-            return NotFound();
-        }
-
-        var orderItems = GetOrderItems();
-
-        var existingItem = orderItems
-            .FirstOrDefault(i => i.ItemID == itemId);
-
-        if (existingItem != null)
-        {
-            existingItem.Quantity++;
-        }
-        else
-        {
-            orderItems.Add(new OrderItemViewModel
-            {
-                ItemID = item.ItemId,
-                ItemName = item.ItemName,
-                Price = itemPrice.Price,
-                Quantity = 1
-            });
-        }
-
-        SaveOrderItems(orderItems);
-
-        var viewModel = new CreateOrderViewModel
-        {
-            ServerID = serverId,
-            OrderItems = orderItems
-        };
-
-        return View("CurrentOrder", viewModel);
-    }
-
-    [HttpPost]
-    public IActionResult IncreaseQuantity(int itemId)
-    {
-        var orderItems = GetOrderItems();
-
-        var item = orderItems.FirstOrDefault(i => i.ItemID == itemId);
-
-        if (item != null)
-        {
-            item.Quantity++;
-        }
-
-        SaveOrderItems(orderItems);
-
-        var viewModel = new CreateOrderViewModel
-        {
-            ServerID = 1,
-            OrderItems = orderItems
-        };
-
-        return View("CurrentOrder", viewModel);
-    }
-
-    [HttpPost]
-    public IActionResult DecreaseQuantity(int itemId)
-    {
-        var orderItems = GetOrderItems();
-
-        var item = orderItems.FirstOrDefault(i => i.ItemID == itemId);
-
-        if (item != null && item.Quantity > 1)
-        {
-            item.Quantity--;
-        }
-
-        SaveOrderItems(orderItems);
-
-        var viewModel = new CreateOrderViewModel
-        {
-            ServerID = 1,
-            OrderItems = orderItems
-        };
-
-        return View("CurrentOrder", viewModel);
-    }
-
-    [HttpPost]
-    public IActionResult RemoveItem(int itemId)
-    {
-        var orderItems = GetOrderItems();
-
-        var item = orderItems.FirstOrDefault(i => i.ItemID == itemId);
-
-        if (item != null)
-        {
-            orderItems.Remove(item);
-        }
-
-        SaveOrderItems(orderItems);
-
-        var viewModel = new CreateOrderViewModel
-        {
-            ServerID = 1,
-            OrderItems = orderItems
-        };
-
-        return View("CurrentOrder", viewModel);
-    }
-
-    [HttpPost]
-    public IActionResult PlaceOrder(int serverId)
-    {
-        var orderItems = GetOrderItems();
-
-        if (orderItems.Count == 0)
-        {
-            return RedirectToAction("CreateOrder", new { serverId });
-        }
-
-        var subTotal = orderItems.Sum(i => i.LineTotal);
-        var tax = subTotal * 0.085m;
-        var amountDue = subTotal + tax;
-
-        var order = new CafeOrder
-        {
-            ServerId = serverId,
-            OrderDate = DateTime.Now,
-            SubTotal = subTotal,
-            Tax = tax,
-            Tip = 0,
-            AmountDue = amountDue
-        };
-
-        _context.CafeOrders.Add(order);
-        _context.SaveChanges();
-
-        foreach (var item in orderItems)
-        {
-            var itemPrice = _context.ItemPrices
-                .FirstOrDefault(p => p.ItemId == item.ItemID);
-
-            if (itemPrice == null)
-            {
-                continue;
-            }
-
-            var orderItem = new OrderItem
-            {
-                OrderId = order.OrderId,
-                ItemPriceId = itemPrice.ItemPriceId,
-                Quantity = (sbyte)item.Quantity,
-                ExtendedPrice = item.LineTotal
-            };
-
-            _context.OrderItems.Add(orderItem);
-        }
-
-        _context.SaveChanges();
-
-        HttpContext.Session.Remove("OrderItems");
-
-        return RedirectToAction(
-            "OrderDetails",
-            new { orderId = order.OrderId }
-        );
     }
 
     public IActionResult OrderDetails(int orderId)
@@ -308,7 +131,7 @@ public class OrdersController : Controller
 
         if (order == null)
         {
-                return NotFound();
+            return NotFound();
 
         }
 
@@ -325,7 +148,7 @@ public class OrdersController : Controller
                 oi.OrderId == orderId &&
                 oi.ItemPriceId == itemPrice.ItemPriceId);
 
-                if (existingOrderItem != null)
+        if (existingOrderItem != null)
         {
             existingOrderItem.Quantity++;
             existingOrderItem.ExtendedPrice += itemPrice.Price;
@@ -346,31 +169,121 @@ public class OrdersController : Controller
 
         _context.SaveChanges();
 
-      
+
 
         var newSubtotal = _context.OrderItems
     .Where(oi => oi.OrderId == orderId)
     .Select(oi => oi.ExtendedPrice)
     .Sum();
 
-var newTax = newSubtotal * 0.085m;
-var newTip = 0m;
-var newAmountDue = newSubtotal + newTax + newTip;
+        var newTax = newSubtotal * 0.085m;
+        var newTip = 0m;
+        var newAmountDue = newSubtotal + newTax + newTip;
 
-order.SubTotal = newSubtotal;
-order.Tax = newTax;
-order.Tip = newTip;
-order.AmountDue = newAmountDue;
-
-
-
-_context.SaveChanges();
+        order.SubTotal = newSubtotal;
+        order.Tax = newTax;
+        order.Tip = newTip;
+        order.AmountDue = newAmountDue;
 
 
 
-return RedirectToAction("OrderDetails", new { orderId });
+        _context.SaveChanges();
+
+
+
+        return RedirectToAction("OrderDetails", new { orderId });
     }
-    
+    [HttpPost]
+public IActionResult IncreaseOrderItemQuantity(int orderItemId)
+{
+    var orderItem = _context.OrderItems
+        .Include(oi => oi.ItemPrice)
+        .FirstOrDefault(oi => oi.OrderItemId == orderItemId);
+
+    if (orderItem == null)
+    {
+        return NotFound();
+    }
+
+    orderItem.Quantity++;
+    orderItem.ExtendedPrice =
+        orderItem.ItemPrice.Price * orderItem.Quantity;
+
+    var order = _context.CafeOrders
+        .FirstOrDefault(o => o.OrderId == orderItem.OrderId);
+
+    if (order == null)
+    {
+        return NotFound();
+    }
+
+    var newSubtotal = _context.OrderItems
+        .Where(oi => oi.OrderId == order.OrderId)
+        .Sum(oi => oi.ExtendedPrice);
+
+    var newTax = newSubtotal * 0.085m;
+    var newTip = 0m;
+    var newAmountDue = newSubtotal + newTax + newTip;
+
+    order.SubTotal = newSubtotal;
+    order.Tax = newTax;
+    order.Tip = newTip;
+    order.AmountDue = newAmountDue;
+
+    _context.SaveChanges();
+
+    return RedirectToAction(
+        "OrderDetails",
+        new { orderId = order.OrderId }
+    );
+}
+[HttpPost]
+public IActionResult DecreaseOrderItemQuantity(int orderItemId)
+{
+    var orderItem = _context.OrderItems
+        .Include(oi => oi.ItemPrice)
+        .FirstOrDefault(oi => oi.OrderItemId == orderItemId);
+
+    if (orderItem == null)
+    {
+        return NotFound();
+    }
+
+    if (orderItem.Quantity > 1)
+    {
+        orderItem.Quantity--;
+        orderItem.ExtendedPrice =
+            orderItem.ItemPrice.Price * orderItem.Quantity;
+    }
+
+    var order = _context.CafeOrders
+        .FirstOrDefault(o => o.OrderId == orderItem.OrderId);
+
+    if (order == null)
+    {
+        return NotFound();
+    }
+
+    var newSubtotal = _context.OrderItems
+        .Where(oi => oi.OrderId == order.OrderId)
+        .Sum(oi => oi.ExtendedPrice);
+
+    var newTax = newSubtotal * 0.085m;
+    var newTip = 0m;
+    var newAmountDue = newSubtotal + newTax + newTip;
+
+    order.SubTotal = newSubtotal;
+    order.Tax = newTax;
+    order.Tip = newTip;
+    order.AmountDue = newAmountDue;
+
+    _context.SaveChanges();
+
+    return RedirectToAction(
+        "OrderDetails",
+        new { orderId = order.OrderId }
+    );
+}
     [HttpGet]
     public IActionResult Payment(int orderId)
     {
@@ -414,26 +327,5 @@ return RedirectToAction("OrderDetails", new { orderId });
         return RedirectToAction("Index", "Home");
     }
 
-    private List<OrderItemViewModel> GetOrderItems()
-    {
-        var orderItemsJson =
-            HttpContext.Session.GetString("OrderItems");
-
-        if (string.IsNullOrEmpty(orderItemsJson))
-        {
-            return new List<OrderItemViewModel>();
-        }
-
-        return JsonSerializer.Deserialize<List<OrderItemViewModel>>(
-            orderItemsJson
-        ) ?? new List<OrderItemViewModel>();
-    }
-
-    private void SaveOrderItems(List<OrderItemViewModel> orderItems)
-    {
-        HttpContext.Session.SetString(
-            "OrderItems",
-            JsonSerializer.Serialize(orderItems)
-        );
-    }
+   
 }

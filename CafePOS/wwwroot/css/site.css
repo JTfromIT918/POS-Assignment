@@ -20,3 +20,86 @@ html {
 body {
   margin-bottom: 60px;
 }
+
+ public IActionResult SelectServer(int serverId)
+    {
+        var server = _context.Servers
+        .FirstOrDefault(s => s.ServerId == serverId);
+
+        if (server == null)
+        {
+            return NotFound();
+        }
+
+        var today = DateOnly.FromDateTime(DateTime.Today);
+
+        if (server.HireDate > today ||
+        (server.TermDate != null && server.TermDate < today))
+
+        {
+            return BadRequest("That server is not active.");
+        }
+
+        var order = new CafeOrder
+
+        {
+
+            ServerId = serverId,
+            OrderDate = DateTime.Now,
+            SubTotal = 0,
+            Tax = 0,
+            Tip = 0,
+            AmountDue = 0
+        };
+
+        _context.CafeOrders.Add(order);
+        _context.SaveChanges();
+
+        return RedirectToAction(
+            "OrderDetails",
+            new { orderId = order.OrderId }
+
+        );
+
+        body {
+    animation: pageFadeIn 1.2s ease-out;
+}
+
+@keyframes pageFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.card {
+    transition:
+        transform 0.25s ease,
+        box-shadow 0.25s ease;
+}
+
+.card:hover {
+    transform: translateY(-6px) scale(1.01);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.18);
+}
+
+.btn {
+    transition:
+        transform 0.15s ease,
+        box-shadow 0.15s ease;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+}
+
+.btn:active {
+    transform: translateY(1px);
+}
+
+    

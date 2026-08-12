@@ -41,11 +41,25 @@
                             : "Unassigned")
                     </p>
 
+                    <div class="row mb-3">
+    <div class="col">
+        <strong>Items</strong>
+        <br />
+        @order.OrderItems.Sum(item => item.Quantity)
+    </div>
+
+    <div class="col">
+        <strong>Amount Due</strong>
+        <br />
+        @order.AmountDue?.ToString("C")
+    </div>
+</div>
+
                     <a asp-controller="Orders"
                        asp-action="OrderDetails"
                        asp-route-orderId="@order.OrderId"
                        class="btn btn-secondary">
-                        View Order
+                        Continue Order
                     </a>
 
                 </div>

@@ -48,8 +48,42 @@
                         </td>
 
                         <td>
-                            @orderItem.Quantity
-                        </td>
+    <div class="d-flex align-items-center gap-2">
+
+        <form asp-controller="Orders"
+              asp-action="DecreaseOrderItemQuantity"
+              method="post">
+
+            <input type="hidden"
+                   name="orderItemId"
+                   value="@orderItem.OrderItemId" />
+
+            <button type="submit"
+                    class="btn btn-secondary btn-sm">
+                −
+            </button>
+
+        </form>
+
+        <strong>@orderItem.Quantity</strong>
+
+        <form asp-controller="Orders"
+              asp-action="IncreaseOrderItemQuantity"
+              method="post">
+
+            <input type="hidden"
+                   name="orderItemId"
+                   value="@orderItem.OrderItemId" />
+
+            <button type="submit"
+                    class="btn btn-secondary btn-sm">
+                +
+            </button>
+
+        </form>
+
+    </div>
+</td>
 
                         <td>
                             @orderItem.ItemPrice.Price.ToString("C")

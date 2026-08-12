@@ -6,8 +6,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
-builder.Services.AddDistributedMemoryCache();
-builder.Services.AddSession();
+
 
 // Add Cafe database
 var connectionString = builder.Configuration.GetConnectionString("CafeDatabase");
@@ -33,7 +32,7 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
-app.UseSession();
+
 
 app.UseAuthorization();
 
