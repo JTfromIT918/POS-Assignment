@@ -93,4 +93,10 @@ public class OrdersController : Controller
 
         return View();
     }
+
+    [HttpPost]
+    public IActionResult AddItem(int serverId, int itemId)
+    {
+        return Content($"Item {itemId} added to server {serverId}'s order.");
+    }
 }
