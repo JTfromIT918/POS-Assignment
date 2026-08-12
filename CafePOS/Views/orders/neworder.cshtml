@@ -1,0 +1,40 @@
+@model List<CafePOS.Models.Server>
+
+@{
+    ViewData["Title"] = "Create New Order";
+}
+
+<div class="container">
+    <div class="row">
+        <div class="col">
+            <h1>Create New Order</h1>
+            <p>Select a server to start a new order.</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col">
+            <div class="row g-4">
+    @foreach (var server in Model)
+    {
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <h3 class="card-title">
+                        @server.FirstName @server.LastName
+                    </h3>
+
+                    <a asp-controller="Orders"
+                       asp-action="SelectServer"
+                       asp-route-serverId="@server.ServerID"
+                       class="btn btn-primary">
+                        Select Server
+                    </a>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+        </div>
+    </div>
+</div>

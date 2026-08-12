@@ -1,0 +1,44 @@
+@using CafePOS.Models
+
+@{
+    ViewData["Title"] = "Create Order";
+
+    var categories = ViewBag.Categories as List<Category>;
+        var items = ViewBag.Items as List<Item>;
+
+}
+
+<div class="container">
+    <div class="mb-4">
+        <h1>Crreate Order</h1>
+        <p>Server ID: <strong>@ViewBag.ServerId</strong></p>
+    </div>
+
+    @foreach (var category in categories!)
+    {
+        <section class="mb-5">
+            <h2>@category.CategoryName</h2>
+
+            <div class="row g-4">
+                @foreach (var item in items! .Where(i => i.CategoryID == category.CategoryID))
+                {
+                    <div class="col-md-4">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <h3 class="card-title">@item.ItemName</h3>
+
+                                <p class="card-text">
+                                    @item.ItemDescription
+                                </p>
+
+                                <button class="btn btn-primary">
+                                    Add
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </section>
+    }
+</div>
