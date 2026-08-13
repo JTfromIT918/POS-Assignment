@@ -320,6 +320,22 @@ public IActionResult DecreaseOrderItemQuantity(int orderItemId)
             return NotFound();
         }
 
+        // Prevents the same order from being paid more than once
+        if (order.PaymentTypeId != null)
+        {
+            return BadRequest("This order has already been paid.");
+        }
+
+        // Makes sure the selected payment type exists
+        var paymentTypeExists = _context.PaymentTypes
+            .Any(p => p.PaymentTypeId == paymentTypeId);
+
+        if (!paymentTypeExists)
+        {
+            return BadRequest("Invalid payment type.");
+        }
+
+
         order.PaymentTypeId = paymentTypeId;
 
         _context.SaveChanges();
