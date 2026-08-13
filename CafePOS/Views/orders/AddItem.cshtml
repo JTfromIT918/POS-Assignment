@@ -2,40 +2,122 @@
 
 @{
     ViewData["Title"] = "Add Item";
-
 }
 
-<div class="container">
-    <h1>Add Item to Order</h1>
+<div class="menu-page">
 
-    @foreach (var item in Model)
+    <div class="page-heading">
+        <div>
+            <span class="order-label">4TH WALL CAFE</span>
+            <h1>Add Item to Order</h1>
+            <p class="page-subtitle">
+                Select an item to add it to the current order.
+            </p>
+        </div>
+
+        <a asp-controller="Orders"
+           asp-action="OrderDetails"
+           asp-route-orderId="@ViewBag.OrderId"
+           class="btn btn-secondary">
+            ← Back to Order
+        </a>
+    </div>
+
+    @if (!Model.Any())
     {
-        <div class="card mb-3">
-            <div class="card-body">
-                <h4>@item.ItemName</h4>
-
-                <p>@item.ItemDescription</p>
-
-                <form asp-controller="Orders"
-                asp-action="AddItemToOrder"
-                method="post">
-                
-                <input type="hidden"
-                name="orderId"
-                value="@ViewBag.OrderId" />
-
-                <input type="hidden" 
-                name="itemId"
-                value="@item.ItemId" />
-
-                <button type="submit"
-                class="btn btn-primary">
-                Add Item
-                </button>
-                
-                </form>
-            </div>
+        <div class="empty-order">
+            <div class="empty-order-icon">☕</div>
+            <h3>No menu items available</h3>
+            <p>There are currently no items available to add.</p>
         </div>
     }
-</div>
+    else
+    {
+        var categories = Model
+            .GroupBy(item => item.Category)
+            .OrderBy(group => group.Key.CategoryName);
 
+        foreach (var category in categories)
+        {
+            <section class="menu-category">
+
+                <div class="menu-category-heading">
+                    <h2>@category.Key.CategoryName</h2>
+                </div>
+
+                <div class="menu-grid">
+
+                    @foreach (var item in category.OrderBy(i => i.ItemName))
+                    {
+                        var currentPrice = item.ItemPrices
+                            .OrderByDescending(p => p.StartDate)
+                            .FirstOrDefault();
+
+                        <div class="menu-card">
+
+                            <div class="menu-card-body">
+
+                                <div class="menu-icon">
+                                    ☕
+                                </div>
+
+                                <div class="menu-item-content">
+
+                                    <h3 class="menu-item-name">
+                                        @item.ItemName
+                                    </h3>
+
+                                    <p class="menu-item-description">
+                                        @item.ItemDescription
+                                    </p>
+
+                                    @if (currentPrice != null)
+                                    {
+                                        <div class="menu-item-footer">
+
+                                            <span class="menu-item-price">
+                                                @currentPrice.Price.ToString("C")
+                                            </span>
+
+                                            <form asp-controller="Orders"
+                                                  asp-action="AddItemToOrder"
+                                                  method="post">
+
+                                                <input type="hidden"
+                                                       name="orderId"
+                                                       value="@ViewBag.OrderId" />
+
+                                                <input type="hidden"
+                                                       name="itemId"
+                                                       value="@item.ItemId" />
+
+                                                <button type="submit"
+                                                        class="btn btn-primary">
+                                                    + Add
+                                                </button>
+
+                                            </form>
+
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="menu-item-unavailable">
+                                            Price unavailable
+                                        </div>
+                                    }
+
+                                </div>
+
+                            </div>
+
+                        </div>
+                    }
+
+                </div>
+
+            </section>
+        }
+    }
+
+</div>

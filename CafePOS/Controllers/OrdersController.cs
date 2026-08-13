@@ -3,7 +3,6 @@ using CafePOS.Models.Database;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-
 namespace CafePOS.Controllers;
 
 public class OrdersController : Controller
@@ -30,7 +29,7 @@ public class OrdersController : Controller
     public IActionResult SelectServer(int serverId)
     {
         var server = _context.Servers
-        .FirstOrDefault(s => s.ServerId == serverId);
+            .FirstOrDefault(s => s.ServerId == serverId);
 
         if (server == null)
         {
@@ -40,16 +39,13 @@ public class OrdersController : Controller
         var today = DateOnly.FromDateTime(DateTime.Today);
 
         if (server.HireDate > today ||
-        (server.TermDate != null && server.TermDate < today))
-
+            (server.TermDate != null && server.TermDate < today))
         {
             return BadRequest("That server is not active.");
         }
 
         var order = new CafeOrder
-
         {
-
             ServerId = serverId,
             OrderDate = DateTime.Now,
             SubTotal = 0,
@@ -64,9 +60,7 @@ public class OrdersController : Controller
         return RedirectToAction(
             "OrderDetails",
             new { orderId = order.OrderId }
-
         );
-
     }
 
     public IActionResult CreateOrder(int serverId)
@@ -115,7 +109,10 @@ public class OrdersController : Controller
         }
 
         var items = _context.Items
-            .OrderBy(i => i.ItemName)
+            .Include(i => i.Category)
+            .Include(i => i.ItemPrices)
+            .OrderBy(i => i.Category.CategoryName)
+            .ThenBy(i => i.ItemName)
             .ToList();
 
         ViewBag.OrderId = orderId;
@@ -127,16 +124,15 @@ public class OrdersController : Controller
     public IActionResult AddItemToOrder(int orderId, int itemId)
     {
         var order = _context.CafeOrders
-        .FirstOrDefault(o => o.OrderId == orderId);
+            .FirstOrDefault(o => o.OrderId == orderId);
 
         if (order == null)
         {
             return NotFound();
-
         }
 
         var itemPrice = _context.ItemPrices
-        .FirstOrDefault(p => p.ItemId == itemId);
+            .FirstOrDefault(p => p.ItemId == itemId);
 
         if (itemPrice == null)
         {
@@ -151,7 +147,9 @@ public class OrdersController : Controller
         if (existingOrderItem != null)
         {
             existingOrderItem.Quantity++;
-            existingOrderItem.ExtendedPrice += itemPrice.Price;
+
+            existingOrderItem.ExtendedPrice =
+                itemPrice.Price * existingOrderItem.Quantity;
         }
         else
         {
@@ -161,7 +159,6 @@ public class OrdersController : Controller
                 ItemPriceId = itemPrice.ItemPriceId,
                 Quantity = 1,
                 ExtendedPrice = itemPrice.Price
-
             };
 
             _context.OrderItems.Add(orderItem);
@@ -169,12 +166,84 @@ public class OrdersController : Controller
 
         _context.SaveChanges();
 
+        RecalculateOrderTotals(orderId);
 
+        return RedirectToAction(
+            "OrderDetails",
+            new { orderId }
+        );
+    }
+
+    [HttpPost]
+    public IActionResult IncreaseOrderItemQuantity(int orderItemId)
+    {
+        var orderItem = _context.OrderItems
+            .Include(oi => oi.ItemPrice)
+            .FirstOrDefault(oi => oi.OrderItemId == orderItemId);
+
+        if (orderItem == null)
+        {
+            return NotFound();
+        }
+
+        orderItem.Quantity++;
+
+        orderItem.ExtendedPrice =
+            orderItem.ItemPrice.Price * orderItem.Quantity;
+
+        _context.SaveChanges();
+
+        RecalculateOrderTotals(orderItem.OrderId);
+
+        return RedirectToAction(
+            "OrderDetails",
+            new { orderId = orderItem.OrderId }
+        );
+    }
+
+    [HttpPost]
+    public IActionResult DecreaseOrderItemQuantity(int orderItemId)
+    {
+        var orderItem = _context.OrderItems
+            .Include(oi => oi.ItemPrice)
+            .FirstOrDefault(oi => oi.OrderItemId == orderItemId);
+
+        if (orderItem == null)
+        {
+            return NotFound();
+        }
+
+        if (orderItem.Quantity > 1)
+        {
+            orderItem.Quantity--;
+
+            orderItem.ExtendedPrice =
+                orderItem.ItemPrice.Price * orderItem.Quantity;
+
+            _context.SaveChanges();
+        }
+
+        RecalculateOrderTotals(orderItem.OrderId);
+
+        return RedirectToAction(
+            "OrderDetails",
+            new { orderId = orderItem.OrderId }
+        );
+    }
+
+    private void RecalculateOrderTotals(int orderId)
+    {
+        var order = _context.CafeOrders
+            .FirstOrDefault(o => o.OrderId == orderId);
+
+        if (order == null)
+        {
+            return;
+        }
 
         var newSubtotal = _context.OrderItems
-    .Where(oi => oi.OrderId == orderId)
-    .Select(oi => oi.ExtendedPrice)
-    .Sum();
+            .Where(oi => oi.OrderId == orderId)
+            .Sum(oi => oi.ExtendedPrice);
 
         var newTax = newSubtotal * 0.085m;
         var newTip = 0m;
@@ -185,105 +254,9 @@ public class OrdersController : Controller
         order.Tip = newTip;
         order.AmountDue = newAmountDue;
 
-
-
         _context.SaveChanges();
-
-
-
-        return RedirectToAction("OrderDetails", new { orderId });
-    }
-    [HttpPost]
-public IActionResult IncreaseOrderItemQuantity(int orderItemId)
-{
-    var orderItem = _context.OrderItems
-        .Include(oi => oi.ItemPrice)
-        .FirstOrDefault(oi => oi.OrderItemId == orderItemId);
-
-    if (orderItem == null)
-    {
-        return NotFound();
     }
 
-    orderItem.Quantity++;
-    orderItem.ExtendedPrice =
-        orderItem.ItemPrice.Price * orderItem.Quantity;
-
-    var order = _context.CafeOrders
-        .FirstOrDefault(o => o.OrderId == orderItem.OrderId);
-
-    if (order == null)
-    {
-        return NotFound();
-    }
-
-    var newSubtotal = _context.OrderItems
-        .Where(oi => oi.OrderId == order.OrderId)
-        .Sum(oi => oi.ExtendedPrice);
-
-    var newTax = newSubtotal * 0.085m;
-    var newTip = 0m;
-    var newAmountDue = newSubtotal + newTax + newTip;
-
-    order.SubTotal = newSubtotal;
-    order.Tax = newTax;
-    order.Tip = newTip;
-    order.AmountDue = newAmountDue;
-
-    _context.SaveChanges();
-
-    return RedirectToAction(
-        "OrderDetails",
-        new { orderId = order.OrderId }
-    );
-}
-[HttpPost]
-public IActionResult DecreaseOrderItemQuantity(int orderItemId)
-{
-    var orderItem = _context.OrderItems
-        .Include(oi => oi.ItemPrice)
-        .FirstOrDefault(oi => oi.OrderItemId == orderItemId);
-
-    if (orderItem == null)
-    {
-        return NotFound();
-    }
-
-    if (orderItem.Quantity > 1)
-    {
-        orderItem.Quantity--;
-        orderItem.ExtendedPrice =
-            orderItem.ItemPrice.Price * orderItem.Quantity;
-    }
-
-    var order = _context.CafeOrders
-        .FirstOrDefault(o => o.OrderId == orderItem.OrderId);
-
-    if (order == null)
-    {
-        return NotFound();
-    }
-
-    var newSubtotal = _context.OrderItems
-        .Where(oi => oi.OrderId == order.OrderId)
-        .Sum(oi => oi.ExtendedPrice);
-
-    var newTax = newSubtotal * 0.085m;
-    var newTip = 0m;
-    var newAmountDue = newSubtotal + newTax + newTip;
-
-    order.SubTotal = newSubtotal;
-    order.Tax = newTax;
-    order.Tip = newTip;
-    order.AmountDue = newAmountDue;
-
-    _context.SaveChanges();
-
-    return RedirectToAction(
-        "OrderDetails",
-        new { orderId = order.OrderId }
-    );
-}
     [HttpGet]
     public IActionResult Payment(int orderId)
     {
@@ -320,13 +293,13 @@ public IActionResult DecreaseOrderItemQuantity(int orderItemId)
             return NotFound();
         }
 
-        // Prevents the same order from being paid more than once
+        // Prevents the same order from being paid more than once.
         if (order.PaymentTypeId != null)
         {
             return BadRequest("This order has already been paid.");
         }
 
-        // Makes sure the selected payment type exists
+        // Makes sure the selected payment type exists.
         var paymentTypeExists = _context.PaymentTypes
             .Any(p => p.PaymentTypeId == paymentTypeId);
 
@@ -335,13 +308,10 @@ public IActionResult DecreaseOrderItemQuantity(int orderItemId)
             return BadRequest("Invalid payment type.");
         }
 
-
         order.PaymentTypeId = paymentTypeId;
 
         _context.SaveChanges();
 
         return RedirectToAction("Index", "Home");
     }
-
-   
 }

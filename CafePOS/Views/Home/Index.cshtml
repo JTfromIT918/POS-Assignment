@@ -6,65 +6,123 @@
 
 <div class="container">
 
-    <h1>Open Orders</h1>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <p class="text-muted mb-1">4th Wall Cafe</p>
+            <h1 class="mb-0">Open Orders</h1>
+        </div>
 
-    <a asp-controller="Orders"
-       asp-action="NewOrder"
-       class="btn btn-primary mb-4">
-        Create New Order
-    </a>
+        <a asp-controller="Orders"
+           asp-action="NewOrder"
+           class="btn btn-primary">
+            + New Order
+        </a>
+    </div>
 
     @if (!Model.Any())
     {
-        <p>No open orders.</p>
+        <div class="card text-center p-5">
+            <div class="card-body">
+                <h3>No Open Orders</h3>
+                <p class="text-muted mb-4">
+                    There are currently no active orders.
+                </p>
+
+                <a asp-controller="Orders"
+                   asp-action="NewOrder"
+                   class="btn btn-primary">
+                    + Start a New Order
+                </a>
+            </div>
+        </div>
     }
     else
     {
-        foreach (var order in Model)
-        {
-            <div class="card mb-3">
-                <div class="card-body">
+        <div class="row g-4">
 
-                    <h3>
-                        Order #@order.OrderId
-                    </h3>
+            @foreach (var order in Model)
+            {
+                <div class="col-md-6 col-lg-4">
 
-                    <p>
-                        Date:
-                        @order.OrderDate.ToString("g")
-                    </p>
+                    <div class="card h-100 order-card">
 
-                    <p>
-                        Server:
-                        @(order.Server != null
-                            ? $"{order.Server.FirstName} {order.Server.LastName}"
-                            : "Unassigned")
-                    </p>
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <span>
+                                Order #@order.OrderId
+                            </span>
 
-                    <div class="row mb-3">
-    <div class="col">
-        <strong>Items</strong>
-        <br />
-        @order.OrderItems.Sum(item => item.Quantity)
-    </div>
+                            <span class="badge bg-light text-dark">
+                                Open
+                            </span>
+                        </div>
 
-    <div class="col">
-        <strong>Amount Due</strong>
-        <br />
-        @order.AmountDue?.ToString("C")
-    </div>
-</div>
+                        <div class="card-body">
 
-                    <a asp-controller="Orders"
-                       asp-action="OrderDetails"
-                       asp-route-orderId="@order.OrderId"
-                       class="btn btn-secondary">
-                        Continue Order
-                    </a>
+                            <div class="mb-3">
+                                <small class="text-muted">
+                                    Server
+                                </small>
+
+                                <div class="fw-semibold">
+                                    @(order.Server != null
+                                        ? $"{order.Server.FirstName} {order.Server.LastName}"
+                                        : "Unassigned")
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <small class="text-muted">
+                                    Order Time
+                                </small>
+
+                                <div>
+                                    @order.OrderDate.ToString("g")
+                                </div>
+                            </div>
+
+                            <div class="order-card-summary">
+
+                                <div>
+                                    <small class="text-muted">
+                                        Items
+                                    </small>
+
+                                    <strong>
+                                        @order.OrderItems.Sum(item => item.Quantity)
+                                    </strong>
+                                </div>
+
+                                <div class="text-end">
+                                    <small class="text-muted">
+                                        Amount Due
+                                    </small>
+
+                                    <strong class="order-price">
+                                        @order.AmountDue?.ToString("C")
+                                    </strong>
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        <div class="card-footer bg-transparent border-0 p-3">
+
+                            <a asp-controller="Orders"
+                               asp-action="OrderDetails"
+                               asp-route-orderId="@order.OrderId"
+                               class="btn btn-secondary w-100">
+                                Continue Order →
+                            </a>
+
+                        </div>
+
+                    </div>
 
                 </div>
-            </div>
-        }
+            }
+
+        </div>
     }
 
 </div>

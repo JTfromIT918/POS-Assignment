@@ -5,42 +5,76 @@
 }
 
 <div class="container">
-    <div class="row">
-        <div class="col">
-            <h1>Create New Order</h1>
-            <p>Select a server to start a new order.</p>
+
+    <div class="page-heading mb-4">
+        <div>
+            <p class="text-muted mb-1">4th Wall Cafe</p>
+            <h1 class="mb-1">Start a New Order</h1>
+            <p class="text-muted mb-0">
+                Select the server handling this order.
+            </p>
         </div>
     </div>
 
-    <div class="row">
-        <div class="col">
-            <div class="row g-4">
-    @foreach (var server in Model)
+    @if (!Model.Any())
     {
-        <div class="col-md-4">
-            <div class="card h-100">
-                <div class="card-body text-center">
-                    <h3 class="card-title">
-                        @server.FirstName @server.LastName
-                    </h3>
-
-                    <a asp-controller="Orders"
-                       asp-action="SelectServer"
-                       asp-route-serverId="@server.ServerId"
-                       class="btn btn-primary">
-                        Select Server
-                    </a>
-                </div>
+        <div class="card text-center p-5">
+            <div class="card-body">
+                <h3>No Servers Available</h3>
+                <p class="text-muted">
+                    There are currently no active servers available.
+                </p>
             </div>
         </div>
     }
-</div>
+    else
+    {
+        <div class="row g-4">
+
+            @foreach (var server in Model)
+            {
+                <div class="col-md-6 col-lg-4">
+
+                    <div class="card h-100 server-card">
+
+                        <div class="card-body text-center">
+
+                            <div class="server-avatar">
+                                @server.FirstName.Substring(0, 1)
+                                @server.LastName.Substring(0, 1)
+                            </div>
+
+                            <h3 class="card-title mb-1">
+                                @server.FirstName @server.LastName
+                            </h3>
+
+                            <p class="text-muted mb-4">
+                                Server
+                            </p>
+
+                            <a asp-controller="Orders"
+                               asp-action="SelectServer"
+                               asp-route-serverId="@server.ServerId"
+                               class="btn btn-primary w-100">
+                                Select Server →
+                            </a>
+
+                        </div>
+
+                    </div>
+
+                </div>
+            }
+
         </div>
+    }
+
+    <div class="mt-4">
+        <a asp-controller="Home"
+           asp-action="Index"
+           class="btn btn-secondary">
+            ← Back to Orders
+        </a>
     </div>
-    @* Returns to the Home page without creating an order *@
-<a asp-controller="Home"
-   asp-action="Index"
-   class="btn btn-secondary mt-3">
-    Back
-</a>
+
 </div>
