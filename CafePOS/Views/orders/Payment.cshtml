@@ -1,8 +1,10 @@
-```cshtml
+
 @model CafePOS.Models.Database.CafeOrder
 
 @{
     ViewData["Title"] = "Process Payment";
+
+    @* Avilable payment types sent from controller *@
     var paymentTypes = ViewBag.PaymentTypes as List<CafePOS.Models.Database.PaymentType>;
 }
 
@@ -33,15 +35,18 @@
     }
     else
     {
+        @*Sends the slected payment type and the order ID to controller *@
         <form asp-controller="Orders"
               asp-action="ProcessPayment"
               method="post">
 
+            @* Keeps track of which  order is being paid.*@
             <input type="hidden"
                    name="orderId"
                    value="@Model.OrderId" />
 
             <div class="mb-3">
+                @*Display each avilable payment type as a radio buton.*@
                 @foreach (var paymentType in paymentTypes)
                 {
                     <div class="form-check mb-2">
@@ -74,4 +79,4 @@
         Back to Order
     </a>
 </div>
-```
+
